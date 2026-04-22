@@ -23,6 +23,12 @@ ABOUT_LINES = {
         "Det försöker hitta kommunen i det andra landet som liknar din mest.",
         "Det försöker inte tala om för dig var du borde bo.",
     ],
+    "no": [
+        "`nabour` er et lite verktøy fra Hedegreen Research.",
+        "[Hedegreen Research](https://hedegreenresearch.com/)",
+        "Det prøver å finne kommunen i det andre landet som ligner mest på din.",
+        "Det prøver ikke å fortelle deg hvor du bør bo.",
+    ],
 }
 
 PAIR_METHOD_LINES = {
@@ -80,6 +86,24 @@ PAIR_METHOD_LINES = {
             "Pair-arkitekturen är redo före pair-datan.",
         ],
     },
+    "no": {
+        "dk_se_v1": [
+            "Verktøyet bruker den laveste felles mengden offentlige tall som Danmark og Sverige faktisk deler.",
+            "Det sammenligner kommuner på befolkning, 65+, utdanning, inntekt, valgdeltakelse, befolkningstetthet og biler.",
+            "Selve motoren arbeider med normaliserte verdier, slik at veldig ulike typer tall likevel kan sammenlignes på en rettferdig måte.",
+            "Forsiden er enklere enn motoren. Noen verdier blir oversatt til mer menneskelig språk i grensesnittet.",
+        ],
+        "dk_no_2024_beta": [
+            "Danmark-Norge-paret kjører på et smalere 2024 beta-lag: befolkning, inntekt og befolkningstetthet.",
+            "Danmarks befolkning og tetthet er bygget opp igjen for 2024 fra offisielle kommunerader, slik at paret faktisk kan dele ett reelt år.",
+            "65+, utdanning, valgdeltakelse og biler er fortsatt ute fordi overlapet mellom Danmark og Norge ennå ikke er ærlig nok der.",
+        ],
+        "se_no_2024_blocked": [
+            "Sverige-Norge-paret er fortsatt blokkert.",
+            "Norge har et rent 2024-lag, men Sverige eksponerer ennå ikke de tilsvarende kommuneradene for 2024 som en ærlig release krever.",
+            "Pair-arkitekturen er klar før pair-dataene er det.",
+        ],
+    },
 }
 
 FACTOR_EXPLANATIONS = {
@@ -110,12 +134,22 @@ FACTOR_EXPLANATIONS = {
         "Population density": "Invånare per kvadratkilometer.",
         "Cars": "Personbilar per 1 000 invånare.",
     },
+    "no": {
+        "Population": "Antall innbyggere i kommunen.",
+        "Age 65+": "Andel av innbyggerne som er 65 år eller eldre.",
+        "Education": "Andel av innbyggerne med høyere utdanning.",
+        "Income": "Landlokalt mål på disponibel inntekt. Danmark, Sverige og Norge bruker ikke samme rå enhet her.",
+        "Turnout": "Avgitte stemmer som andel av de stemmeberettigede.",
+        "Population density": "Innbyggere per kvadratkilometer.",
+        "Cars": "Personbiler per 1 000 innbyggere.",
+    },
 }
 
 INCOME_NOTES = {
     "en": "The raw income values do not start on one shared currency scale. The matcher harmonizes them internally pair by pair, while the public display stays explicit about conversion and unit limits.",
     "da": "De rå indkomsttal starter ikke på én fælles pengeskala. Matcheren harmoniserer dem internt pair for pair, mens den synlige visning er tydelig om omregning og begrænsninger.",
     "sv": "De råa inkomstvärdena börjar inte på en gemensam valutaskala. Matcharen harmoniserar dem internt pair för pair, medan den synliga visningen är tydlig med omräkning och begränsningar.",
+    "no": "De rå inntektstallene starter ikke på én felles pengeskala. Matcheren harmoniserer dem internt pair for pair, mens den synlige visningen er tydelig om omregning og begrensninger.",
 }
 
 

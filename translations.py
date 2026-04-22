@@ -2,18 +2,20 @@ from __future__ import annotations
 
 
 DEFAULT_LANGUAGE = "en"
-SUPPORTED_LANGUAGES = ("en", "da", "sv")
+SUPPORTED_LANGUAGES = ("en", "da", "sv", "no")
 
 LANGUAGE_LABELS = {
     "en": "English",
     "da": "Dansk",
     "sv": "Svenska",
+    "no": "Norsk",
 }
 
 COUNTRY_LABELS = {
     "en": {"denmark": "Denmark", "sweden": "Sweden", "norway": "Norway"},
     "da": {"denmark": "Danmark", "sweden": "Sverige", "norway": "Norge"},
     "sv": {"denmark": "Danmark", "sweden": "Sverige", "norway": "Norge"},
+    "no": {"denmark": "Danmark", "sweden": "Sverige", "norway": "Norge"},
 }
 
 FACTOR_LABELS = {
@@ -43,6 +45,15 @@ FACTOR_LABELS = {
         "Turnout": "Valdeltagande",
         "Population density": "Befolkningstäthet",
         "Cars": "Bilar",
+    },
+    "no": {
+        "Population": "Befolkning",
+        "Age 65+": "65+",
+        "Education": "Utdanning",
+        "Income": "Inntekt",
+        "Turnout": "Valgdeltakelse",
+        "Population density": "Befolkningstetthet",
+        "Cars": "Biler",
     },
 }
 
@@ -211,6 +222,61 @@ TEXT = {
         "density_diff": "Ungefär {value} {direction}",
         "area_note": "Yta: {source_area} i {source_name} och {target_area} i {target_name}.",
         "income_display_note": "Visas i {currency} med växelkursen från {date}.",
+    },
+    "no": {
+        "settings": "Innstillinger",
+        "language": "Språk",
+        "choose_pair_begin": "Velg et landpar",
+        "choose_pair_subtitle": "Start med paret du vil sammenligne på tvers av.",
+        "choose_country_in_pair": "Velg landet ditt i dette paret.",
+        "about_this_tool": "Om verktøyet",
+        "how_matching_works": "Slik virker matchingen",
+        "what_numbers_mean": "Hva tallene betyr",
+        "income_note": "Merknad om inntekt",
+        "choose_country_begin": "Velg landet ditt og begynn",
+        "start_where_coming": "Start med hvor du kommer fra.",
+        "pair_not_ready": "Ikke klart ennå: venter på årlige faktorrader som passer sammen.",
+        "pair_reference_year": "Referanseår: {year}",
+        "i_am_from_denmark": "Jeg er fra Danmark",
+        "i_am_from_sweden": "Jeg er fra Sverige",
+        "i_am_from_norway": "Jeg er fra Norge",
+        "choose_region_then_municipality": "Velg regionen din og deretter kommunen din.",
+        "region": "Region",
+        "municipality": "Kommune",
+        "back": "Tilbake",
+        "find_matches": "Finn matcher",
+        "start_over": "Start på nytt",
+        "results_title": "{municipality}",
+        "results_intro": "Fem steder i {country} som ligner mest på {municipality}",
+        "result_closest": "Ligner mest på {municipality} i {factors}.",
+        "result_gaps": "Skiller seg fortsatt på {factors}.",
+        "compare_places": "Sammenlign steder",
+        "show_statistics": "Vis statistikk",
+        "factor_column": "Faktor",
+        "gap_column": "Avstand",
+        "roughly": "omtrent",
+        "about": "omtrent",
+        "more": "mer",
+        "less": "mindre",
+        "almost_same": "Nesten det samme.",
+        "almost_same_size": "Nesten samme størrelse.",
+        "population_people": "Befolkning",
+        "people_65_or_older": "Mennesker som er 65 år eller eldre",
+        "people_with_higher_education": "Mennesker med høyere utdanning",
+        "disposable_income": "Disponibel inntekt",
+        "people_voted_last_election": "Mennesker som stemte ved forrige valg",
+        "people_per_square_kilometre": "Mennesker per kvadratkilometer",
+        "cars": "Biler",
+        "in_place_about": "I {place}: omtrent {value}",
+        "place_plain": "{place}: {value}",
+        "in_place_roughly_currency": "I {place}: omtrent {value}",
+        "about_more_less": "Omtrent {value} {direction}",
+        "roughly_currency_more_less": "Omtrent {value} {direction}",
+        "turnout_line": "Av 100 stemmeberettigede i {place}: stemte omtrent {value}",
+        "turnout_diff": "Omtrent {value} {direction}",
+        "density_diff": "Omtrent {value} {direction}",
+        "area_note": "Areal: {source_area} i {source_name} og {target_area} i {target_name}.",
+        "income_display_note": "Vist i {currency} med valutakursen fra {date}.",
     },
 }
 
