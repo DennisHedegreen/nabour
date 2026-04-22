@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import streamlit as st
 
-from cross_border_matcher import build_default_matcher_state, compute_cross_border_matches
-from data_loader import MATCHER_REFERENCE_YEAR
+from cross_border_matcher import build_matcher_state, compute_cross_border_matches
 from info_content import get_info
 from income_conversion import income_to_home_currency_display
+from pair_registry import get_pair_spec, get_target_country_id, list_pair_specs, pair_label
 from region_metadata import get_region_navigation
 from translations import DEFAULT_LANGUAGE, LANGUAGE_LABELS, SUPPORTED_LANGUAGES, country_label, factor_label, t
 
@@ -211,15 +211,20 @@ def apply_styles() -> None:
 
 
 @st.cache_resource
-def get_matcher_state():
-    return build_default_matcher_state()
+def get_matcher_state(pair_id: str):
+    return build_matcher_state(pair_id)
 
 
 @st.cache_data
-def get_region_maps():
+def get_region_maps(pair_id: str):
+    pair_spec = get_pair_spec(pair_id)
     return {
-        "denmark": get_region_navigation("denmark"),
-        "sweden": get_region_navigation("sweden"),
+        country_id: get_region_navigation(
+            country_id,
+            reference_year=pair_spec.reference_year,
+            factor_keys=pair_spec.factor_keys,
+        )
+        for country_id in pair_spec.countries
     }
 
 
@@ -227,9 +232,14 @@ def get_language() -> str:
     return st.session_state.get("language", DEFAULT_LANGUAGE)
 
 
+def get_selected_pair_id() -> str:
+    return st.session_state.get("pair_id") or list_pair_specs(active_only=True)[0].pair_id
+
+
 def render_settings_menu() -> None:
     language = get_language()
-    info = get_info(language)
+    pair_id = get_selected_pair_id()
+    info = get_info(language, pair_id)
     with st.popover("⚙"):
         selected_language = st.selectbox(
             t(language, "language"),
@@ -240,11 +250,16 @@ def render_settings_menu() -> None:
         )
         st.session_state["language"] = selected_language
         language = selected_language
-        info = get_info(language)
+        pair_id = get_selected_pair_id()
+        info = get_info(language, pair_id)
+        pair_spec = get_pair_spec(pair_id)
 
         st.markdown(f"**{t(language, 'about_this_tool')}**")
         for line in info["about"]:
             st.markdown(f"- {line}")
+
+        st.markdown(f"**{pair_label(language, pair_id)}**")
+        st.markdown(f"- {t(language, 'pair_reference_year', year=pair_spec.reference_year)}")
 
         st.markdown(f"**{t(language, 'how_matching_works')}**")
         for line in info["method"]:
@@ -270,7 +285,9 @@ def format_factor_value(label: str, value: float, country_id: str) -> str:
     if label == "Income":
         if country_id == "denmark":
             return f"{value:,.0f} DKK"
-        return f"{value:,.1f} on Sweden's income scale"
+        if country_id == "sweden":
+            return f"{value:,.1f} on Sweden's income scale"
+        return f"{value:,.0f} NOK"
     return f"{value:,.1f}"
 
 
@@ -301,11 +318,28 @@ def get_factor_block_class(standardized_gap: float) -> str:
     return "nabour-factor-block nabour-factor-block--far"
 
 
+def reset_after_pair_change(pair_id: str) -> None:
+    st.session_state["pair_id"] = pair_id
+    st.session_state["source_country"] = None
+    st.session_state["source_region"] = None
+    st.session_state["source_municipality"] = None
+    st.session_state["current_step"] = "country"
+
+
 def reset_after_country_change(country_id: str) -> None:
     st.session_state["source_country"] = country_id
     st.session_state["source_region"] = None
     st.session_state["source_municipality"] = None
     st.session_state["current_step"] = "region"
+
+
+def country_cta_label(language: str, country_id: str) -> str:
+    key_map = {
+        "denmark": "i_am_from_denmark",
+        "sweden": "i_am_from_sweden",
+        "norway": "i_am_from_norway",
+    }
+    return t(language, key_map[country_id])
 
 def describe_difference(detail, source_name: str) -> str:
     diff = detail.target_value - detail.source_value
@@ -486,7 +520,7 @@ def render_statistics_box(match) -> None:
 
 def render_explanations_box() -> None:
     language = get_language()
-    info = get_info(language)
+    info = get_info(language, get_selected_pair_id())
     lines = []
     for english_label, explanation in info["factors"].items():
         lines.append(
@@ -519,20 +553,53 @@ def format_factor_list(labels: list[str], language: str) -> str:
     return f"{joiner}, and {last}"
 
 
-def render_country_step() -> None:
+def render_pair_step() -> None:
     language = get_language()
     st.markdown('<div class="nabour-topbar"><div class="nabour-topbar-title">Nabour</div></div>', unsafe_allow_html=True)
-    st.markdown(f'<h1 class="nabour-title">{t(language, "choose_country_begin")}</h1>', unsafe_allow_html=True)
+    st.markdown(f'<h1 class="nabour-title">{t(language, "choose_pair_begin")}</h1>', unsafe_allow_html=True)
+    st.markdown(f'<p class="nabour-subtitle">{t(language, "choose_pair_subtitle")}</p>', unsafe_allow_html=True)
+
+    for pair_spec in list_pair_specs():
+        if st.button(
+            f"{pair_label(language, pair_spec.pair_id)} · {pair_spec.reference_year}",
+            key=f"pair-{pair_spec.pair_id}",
+            disabled=not pair_spec.active,
+        ):
+            reset_after_pair_change(pair_spec.pair_id)
+            st.rerun()
+        if not pair_spec.active:
+            st.markdown(
+                f"<div class='nabour-small'>{t(language, 'pair_not_ready')} "
+                f"({t(language, 'pair_reference_year', year=pair_spec.reference_year)})</div>",
+                unsafe_allow_html=True,
+            )
+
+
+def render_country_step() -> None:
+    language = get_language()
+    pair_spec = get_pair_spec(get_selected_pair_id())
+    st.markdown('<div class="nabour-topbar"><div class="nabour-topbar-title">Nabour</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<h1 class="nabour-title">{pair_label(language, pair_spec.pair_id)}</h1>', unsafe_allow_html=True)
+    st.markdown(f'<p class="nabour-subtitle">{t(language, "choose_country_in_pair")}</p>', unsafe_allow_html=True)
+    st.markdown(
+        f"<div class='nabour-small'>{t(language, 'pair_reference_year', year=pair_spec.reference_year)}</div>",
+        unsafe_allow_html=True,
+    )
     st.write("")
-    left, col1, col2, right = st.columns([1, 2.4, 2.4, 1], gap="medium")
-    with col1:
-        if st.button(t(language, "i_am_from_denmark"), key="country-denmark"):
-            reset_after_country_change("denmark")
-            st.rerun()
-    with col2:
-        if st.button(t(language, "i_am_from_sweden"), key="country-sweden"):
-            reset_after_country_change("sweden")
-            st.rerun()
+
+    country_columns = st.columns(len(pair_spec.countries), gap="medium")
+    for column, country_id in zip(country_columns, pair_spec.countries):
+        with column:
+            if st.button(country_cta_label(language, country_id), key=f"country-{country_id}"):
+                reset_after_country_change(country_id)
+                st.rerun()
+
+    if st.button(t(language, "back"), key="back-to-pair"):
+        st.session_state["current_step"] = "pair"
+        st.session_state["source_country"] = None
+        st.session_state["source_region"] = None
+        st.session_state["source_municipality"] = None
+        st.rerun()
 
 
 def render_region_step(region_maps) -> None:
@@ -580,7 +647,7 @@ def render_matches_step(matcher_state) -> None:
     language = get_language()
     source_country = st.session_state["source_country"]
     source_municipality = st.session_state["source_municipality"]
-    target_country = "sweden" if source_country == "denmark" else "denmark"
+    target_country = get_target_country_id(matcher_state.pair_spec, source_country)
     matches = compute_cross_border_matches(
         source_country_id=source_country,
         source_municipality=source_municipality,
@@ -602,7 +669,8 @@ def render_matches_step(matcher_state) -> None:
             st.rerun()
     with col2:
         if st.button(t(language, "start_over"), key="start-over"):
-            st.session_state["current_step"] = "country"
+            st.session_state["current_step"] = "pair"
+            st.session_state["pair_id"] = None
             st.session_state["source_country"] = None
             st.session_state["source_region"] = None
             st.session_state["source_municipality"] = None
@@ -643,10 +711,13 @@ def main() -> None:
     apply_styles()
 
     if "current_step" not in st.session_state:
-        st.session_state["current_step"] = "country"
+        st.session_state["current_step"] = "pair"
+        st.session_state["pair_id"] = None
         st.session_state["source_country"] = None
         st.session_state["source_region"] = None
         st.session_state["source_municipality"] = None
+    if "pair_id" not in st.session_state:
+        st.session_state["pair_id"] = None
     if "language" not in st.session_state:
         st.session_state["language"] = DEFAULT_LANGUAGE
 
@@ -654,8 +725,18 @@ def main() -> None:
     with top_right:
         render_settings_menu()
 
-    matcher_state = get_matcher_state()
-    region_maps = get_region_maps()
+    if st.session_state["current_step"] == "pair" or not st.session_state.get("pair_id"):
+        render_pair_step()
+        return
+
+    pair_id = st.session_state["pair_id"]
+    pair_spec = get_pair_spec(pair_id)
+    if not pair_spec.active:
+        st.session_state["current_step"] = "pair"
+        st.rerun()
+
+    matcher_state = get_matcher_state(pair_id)
+    region_maps = get_region_maps(pair_id)
 
     if st.session_state["current_step"] == "country" or not st.session_state.get("source_country"):
         render_country_step()

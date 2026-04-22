@@ -4,10 +4,9 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
+from pair_registry import AVAILABLE_COUNTRIES, PairSpec
 
-MATCHER_FACTOR_KEYS = ("population", "age65", "education", "income", "turnout", "density", "cars")
 MATCHER_REFERENCE_YEAR = 2022
-SUPPORTED_COUNTRIES = ("denmark", "sweden")
 
 FACTOR_LABELS = {
     "population": "Population",
@@ -52,7 +51,7 @@ def get_data_root() -> Path:
 
 
 def get_factor_path(country_id: str, factor_key: str, data_root: Path | None = None) -> Path:
-    if country_id not in SUPPORTED_COUNTRIES:
+    if country_id not in AVAILABLE_COUNTRIES:
         raise KeyError(f"Unsupported country: {country_id}")
     if factor_key not in FACTOR_FILE_NAMES:
         raise KeyError(f"Unsupported factor: {factor_key}")
@@ -84,7 +83,8 @@ def load_factor_values(
 
 def load_country_vectors(
     country_id: str,
-    reference_year: int = MATCHER_REFERENCE_YEAR,
+    factor_keys: tuple[str, ...],
+    reference_year: int,
     data_root: Path | None = None,
 ) -> list[MunicipalityVector]:
     factor_maps = {
@@ -94,7 +94,7 @@ def load_country_vectors(
             reference_year=reference_year,
             data_root=data_root,
         )
-        for factor_key in MATCHER_FACTOR_KEYS
+        for factor_key in factor_keys
     }
     municipality_sets = [set(values.keys()) for values in factor_maps.values()]
     if not municipality_sets:
@@ -103,7 +103,7 @@ def load_country_vectors(
     shared_municipalities = set.intersection(*municipality_sets)
     vectors: list[MunicipalityVector] = []
     for municipality in sorted(shared_municipalities):
-        values = {factor_key: factor_maps[factor_key][municipality] for factor_key in MATCHER_FACTOR_KEYS}
+        values = {factor_key: factor_maps[factor_key][municipality] for factor_key in factor_keys}
         vectors.append(
             MunicipalityVector(
                 country_id=country_id,
@@ -115,56 +115,57 @@ def load_country_vectors(
     return vectors
 
 
-def load_vectors_by_country(
-    reference_year: int = MATCHER_REFERENCE_YEAR,
+def load_vectors_by_country_for_pair(
+    pair_spec: PairSpec,
     data_root: Path | None = None,
 ) -> dict[str, list[MunicipalityVector]]:
     return {
         country_id: load_country_vectors(
             country_id=country_id,
-            reference_year=reference_year,
+            factor_keys=pair_spec.factor_keys,
+            reference_year=pair_spec.reference_year,
             data_root=data_root,
         )
-        for country_id in SUPPORTED_COUNTRIES
+        for country_id in pair_spec.countries
     }
 
 
 def summarize_country_coverage(
+    pair_spec: PairSpec,
     country_id: str,
-    reference_year: int = MATCHER_REFERENCE_YEAR,
     data_root: Path | None = None,
 ) -> CoverageSummary:
     factor_maps = {
         factor_key: load_factor_values(
             country_id=country_id,
             factor_key=factor_key,
-            reference_year=reference_year,
+            reference_year=pair_spec.reference_year,
             data_root=data_root,
         )
-        for factor_key in MATCHER_FACTOR_KEYS
+        for factor_key in pair_spec.factor_keys
     }
-    all_municipalities = set().union(*(values.keys() for values in factor_maps.values()))
-    shared_municipalities = set.intersection(*(set(values.keys()) for values in factor_maps.values()))
+    all_municipalities = set().union(*(values.keys() for values in factor_maps.values())) if factor_maps else set()
+    shared_municipalities = set.intersection(*(set(values.keys()) for values in factor_maps.values())) if factor_maps else set()
     return CoverageSummary(
         country_id=country_id,
-        reference_year=reference_year,
-        factor_count=len(MATCHER_FACTOR_KEYS),
+        reference_year=pair_spec.reference_year,
+        factor_count=len(pair_spec.factor_keys),
         municipality_count=len(shared_municipalities),
         dropped_municipalities=len(all_municipalities - shared_municipalities),
     )
 
 
-def summarize_all_coverage(
-    reference_year: int = MATCHER_REFERENCE_YEAR,
+def summarize_pair_coverage(
+    pair_spec: PairSpec,
     data_root: Path | None = None,
 ) -> dict[str, CoverageSummary]:
     return {
         country_id: summarize_country_coverage(
+            pair_spec=pair_spec,
             country_id=country_id,
-            reference_year=reference_year,
             data_root=data_root,
         )
-        for country_id in SUPPORTED_COUNTRIES
+        for country_id in pair_spec.countries
     }
 
 

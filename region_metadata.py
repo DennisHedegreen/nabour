@@ -132,6 +132,24 @@ SWEDEN_COUNTY_BY_PREFIX = {
     "25": "Norrbottens län",
 }
 
+NORWAY_COUNTY_BY_PREFIX = {
+    "03": "Oslo",
+    "11": "Rogaland",
+    "15": "Møre og Romsdal",
+    "18": "Nordland",
+    "31": "Østfold",
+    "32": "Akershus",
+    "33": "Buskerud",
+    "34": "Innlandet",
+    "39": "Vestfold",
+    "40": "Telemark",
+    "42": "Agder",
+    "46": "Vestland",
+    "50": "Trøndelag",
+    "55": "Troms",
+    "56": "Finnmark",
+}
+
 
 def get_sweden_population_path(data_root: Path | None = None) -> Path:
     root = data_root or (Path(__file__).resolve().parent / "data")
@@ -154,6 +172,27 @@ def load_sweden_region_by_municipality(
     return region_by_municipality
 
 
+def get_norway_population_path(data_root: Path | None = None) -> Path:
+    root = data_root or (Path(__file__).resolve().parent / "data")
+    return root / "norway" / "factors" / "population.csv"
+
+
+def load_norway_region_by_municipality(
+    reference_year: int = MATCHER_REFERENCE_YEAR,
+    data_root: Path | None = None,
+) -> dict[str, str]:
+    region_by_municipality: dict[str, str] = {}
+    with get_norway_population_path(data_root=data_root).open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            if int(row["year"]) != reference_year:
+                continue
+            municipality = row["municipality"].strip()
+            code_prefix = row["public_geography_id"][:2]
+            region_by_municipality[municipality] = NORWAY_COUNTY_BY_PREFIX[code_prefix]
+    return region_by_municipality
+
+
 def get_region_by_municipality(
     country_id: str,
     reference_year: int = MATCHER_REFERENCE_YEAR,
@@ -163,15 +202,22 @@ def get_region_by_municipality(
         return DENMARK_REGION_BY_MUNICIPALITY.copy()
     if country_id == "sweden":
         return load_sweden_region_by_municipality(reference_year=reference_year, data_root=data_root)
+    if country_id == "norway":
+        return load_norway_region_by_municipality(reference_year=reference_year, data_root=data_root)
     raise KeyError(f"Unsupported country: {country_id}")
 
 
 def get_region_navigation(
     country_id: str,
     reference_year: int = MATCHER_REFERENCE_YEAR,
+    factor_keys: tuple[str, ...] | None = None,
     data_root: Path | None = None,
 ) -> dict[str, list[str]]:
-    available = {vector.municipality for vector in load_country_vectors(country_id, reference_year, data_root)}
+    active_factor_keys = factor_keys or ("population",)
+    available = {
+        vector.municipality
+        for vector in load_country_vectors(country_id, active_factor_keys, reference_year, data_root)
+    }
     region_by_municipality = get_region_by_municipality(
         country_id=country_id,
         reference_year=reference_year,

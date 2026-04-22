@@ -2,17 +2,23 @@ from __future__ import annotations
 
 import argparse
 
-from cross_border_matcher import build_default_matcher_state, compute_cross_border_matches
+from cross_border_matcher import build_matcher_state, compute_cross_border_matches
+from pair_registry import get_pair_spec, list_pair_specs
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Find top cross-border municipality matches between Denmark and Sweden."
+        description="Find top cross-border municipality matches inside an active nabour country pair."
+    )
+    parser.add_argument(
+        "--pair",
+        required=True,
+        choices=tuple(spec.pair_id for spec in list_pair_specs(active_only=True)),
+        help="Active country pair",
     )
     parser.add_argument(
         "--country",
         required=True,
-        choices=("denmark", "sweden"),
         help="Source country",
     )
     parser.add_argument(
@@ -32,8 +38,11 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
+    pair_spec = get_pair_spec(args.pair)
+    if args.country not in pair_spec.countries:
+        parser.error(f"--country must be one of: {', '.join(pair_spec.countries)}")
 
-    matcher_state = build_default_matcher_state()
+    matcher_state = build_matcher_state(args.pair)
     matches = compute_cross_border_matches(
         source_country_id=args.country,
         source_municipality=args.municipality,
@@ -41,6 +50,7 @@ def main() -> None:
         top_n=args.top,
     )
 
+    print(f"pair={args.pair}")
     print(f"source_country={args.country}")
     print(f"source_municipality={args.municipality}")
     for index, match in enumerate(matches, start=1):

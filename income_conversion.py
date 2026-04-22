@@ -11,10 +11,17 @@ MATCH_REFERENCE_DATE = "2022-12-30"
 MATCH_REFERENCE_EUR_DKK = 7.4365
 MATCH_REFERENCE_EUR_SEK = 11.1218
 
+# Source: ECB euro reference rates, 31 December 2024.
+MATCH_REFERENCE_2024_DATE = "2024-12-31"
+MATCH_REFERENCE_2024_EUR_DKK = 7.4578
+MATCH_REFERENCE_2024_EUR_SEK = 11.4590
+MATCH_REFERENCE_2024_EUR_NOK = 11.7950
+
 # Source: ECB euro reference rates, 2 April 2026.
 DISPLAY_REFERENCE_DATE = "2026-04-02"
 DISPLAY_REFERENCE_EUR_DKK = 7.4722
 DISPLAY_REFERENCE_EUR_SEK = 10.9480
+DISPLAY_REFERENCE_EUR_NOK = 11.2285
 
 
 @dataclass(frozen=True)
@@ -34,9 +41,9 @@ def derive_cross_rate(base_a_per_eur: float, base_b_per_eur: float) -> float:
 
 MATCH_REFERENCE_SEK_TO_DKK = derive_cross_rate(MATCH_REFERENCE_EUR_SEK, MATCH_REFERENCE_EUR_DKK)
 MATCH_REFERENCE_DKK_TO_SEK = derive_cross_rate(MATCH_REFERENCE_EUR_DKK, MATCH_REFERENCE_EUR_SEK)
+MATCH_REFERENCE_2024_NOK_TO_DKK = derive_cross_rate(MATCH_REFERENCE_2024_EUR_NOK, MATCH_REFERENCE_2024_EUR_DKK)
 DISPLAY_REFERENCE_SEK_TO_DKK = derive_cross_rate(DISPLAY_REFERENCE_EUR_SEK, DISPLAY_REFERENCE_EUR_DKK)
 DISPLAY_REFERENCE_DKK_TO_SEK = derive_cross_rate(DISPLAY_REFERENCE_EUR_DKK, DISPLAY_REFERENCE_EUR_SEK)
-
 
 def get_income_conversion_meta() -> IncomeConversionMeta:
     return IncomeConversionMeta(
@@ -59,14 +66,24 @@ def income_to_local_currency(country_id: str, raw_value: float) -> tuple[str, fl
         return ("DKK", raw_value)
     if country_id == "sweden":
         return ("SEK", sweden_price_base_amounts_to_sek(raw_value))
+    if country_id == "norway":
+        return ("NOK", raw_value)
     raise KeyError(f"Unsupported country: {country_id}")
 
 
-def income_to_match_currency_dkk(country_id: str, raw_value: float) -> float:
+DISPLAY_REFERENCE_NOK_TO_DKK = derive_cross_rate(DISPLAY_REFERENCE_EUR_NOK, DISPLAY_REFERENCE_EUR_DKK)
+DISPLAY_REFERENCE_DKK_TO_NOK = derive_cross_rate(DISPLAY_REFERENCE_EUR_DKK, DISPLAY_REFERENCE_EUR_NOK)
+DISPLAY_REFERENCE_SEK_TO_NOK = derive_cross_rate(DISPLAY_REFERENCE_EUR_SEK, DISPLAY_REFERENCE_EUR_NOK)
+DISPLAY_REFERENCE_NOK_TO_SEK = derive_cross_rate(DISPLAY_REFERENCE_EUR_NOK, DISPLAY_REFERENCE_EUR_SEK)
+
+
+def income_to_match_currency_dkk(country_id: str, raw_value: float, *, reference_year: int) -> float:
     if country_id == "denmark":
         return raw_value
-    if country_id == "sweden":
+    if country_id == "sweden" and reference_year == 2022:
         return sweden_price_base_amounts_to_sek(raw_value) * MATCH_REFERENCE_SEK_TO_DKK
+    if country_id == "norway" and reference_year == 2024:
+        return raw_value * MATCH_REFERENCE_2024_NOK_TO_DKK
     raise KeyError(f"Unsupported country: {country_id}")
 
 
@@ -76,11 +93,22 @@ def income_to_home_currency_display(country_id: str, raw_value: float, home_coun
     if home_country_id == "denmark":
         if local_currency == "DKK":
             return ("DKK", local_value)
-        return ("DKK", local_value * DISPLAY_REFERENCE_SEK_TO_DKK)
+        if local_currency == "SEK":
+            return ("DKK", local_value * DISPLAY_REFERENCE_SEK_TO_DKK)
+        return ("DKK", local_value * DISPLAY_REFERENCE_NOK_TO_DKK)
 
     if home_country_id == "sweden":
         if local_currency == "SEK":
             return ("SEK", local_value)
-        return ("SEK", local_value * DISPLAY_REFERENCE_DKK_TO_SEK)
+        if local_currency == "DKK":
+            return ("SEK", local_value * DISPLAY_REFERENCE_DKK_TO_SEK)
+        return ("SEK", local_value * DISPLAY_REFERENCE_NOK_TO_SEK)
+
+    if home_country_id == "norway":
+        if local_currency == "NOK":
+            return ("NOK", local_value)
+        if local_currency == "DKK":
+            return ("NOK", local_value * DISPLAY_REFERENCE_DKK_TO_NOK)
+        return ("NOK", local_value * DISPLAY_REFERENCE_SEK_TO_NOK)
 
     raise KeyError(f"Unsupported home country: {home_country_id}")
