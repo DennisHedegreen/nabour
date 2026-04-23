@@ -223,6 +223,7 @@ def get_region_maps(pair_id: str):
             country_id,
             reference_year=pair_spec.reference_year,
             factor_keys=pair_spec.factor_keys,
+            factor_years={factor_key: pair_spec.factor_year(country_id, factor_key) for factor_key in pair_spec.factor_keys},
         )
         for country_id in pair_spec.countries
     }
@@ -613,6 +614,13 @@ def render_region_step(region_maps) -> None:
     st.markdown(f'<h1 class="nabour-title">{country_name}</h1>', unsafe_allow_html=True)
     st.markdown(f'<p class="nabour-subtitle">{t(language, "choose_region_then_municipality")}</p>', unsafe_allow_html=True)
 
+    if not region_names:
+        st.markdown('<div class="nabour-small">No regions available for this pair/country yet.</div>', unsafe_allow_html=True)
+        if st.button(t(language, "back"), key="back-to-country-empty"):
+            st.session_state["current_step"] = "country"
+            st.rerun()
+        return
+
     selected_region = st.selectbox(
         t(language, "region"),
         options=region_names,
@@ -622,7 +630,14 @@ def render_region_step(region_maps) -> None:
     )
     st.session_state["source_region"] = selected_region
 
-    municipalities = regions[selected_region]
+    municipalities = regions.get(selected_region, [])
+    if not municipalities:
+        st.markdown('<div class="nabour-small">No municipalities available in this region yet.</div>', unsafe_allow_html=True)
+        if st.button(t(language, "back"), key="back-to-country-empty-municipalities"):
+            st.session_state["current_step"] = "country"
+            st.rerun()
+        return
+
     selected_municipality = st.selectbox(
         t(language, "municipality"),
         options=municipalities,

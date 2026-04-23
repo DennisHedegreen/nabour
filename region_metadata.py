@@ -211,13 +211,14 @@ def get_region_navigation(
     country_id: str,
     reference_year: int = MATCHER_REFERENCE_YEAR,
     factor_keys: tuple[str, ...] | None = None,
+    factor_years: dict[str, int] | None = None,
     data_root: Path | None = None,
 ) -> dict[str, list[str]]:
     active_factor_keys = factor_keys or ("population",)
-    factor_years = {factor_key: reference_year for factor_key in active_factor_keys}
+    active_factor_years = factor_years or {factor_key: reference_year for factor_key in active_factor_keys}
     available = {
         vector.municipality
-        for vector in load_country_vectors(country_id, factor_years, reference_year, data_root)
+        for vector in load_country_vectors(country_id, active_factor_years, reference_year, data_root)
     }
     region_by_municipality = get_region_by_municipality(
         country_id=country_id,
