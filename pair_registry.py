@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 AVAILABLE_COUNTRIES = ("denmark", "sweden", "norway")
@@ -14,8 +14,16 @@ class PairSpec:
     factor_keys: tuple[str, ...]
     labels: dict[str, str]
     method_note_key: str
+    factor_year_overrides: dict[str, int] = field(default_factory=dict)
+    country_factor_year_overrides: dict[str, dict[str, int]] = field(default_factory=dict)
     active: bool = True
     blocked_reason_key: str | None = None
+
+    def factor_year(self, country_id: str, factor_key: str) -> int:
+        country_overrides = self.country_factor_year_overrides.get(country_id, {})
+        if factor_key in country_overrides:
+            return country_overrides[factor_key]
+        return self.factor_year_overrides.get(factor_key, self.reference_year)
 
 
 PAIR_SPECS = {
@@ -24,6 +32,8 @@ PAIR_SPECS = {
         countries=("denmark", "sweden"),
         reference_year=2022,
         factor_keys=("population", "age65", "education", "income", "turnout", "density", "cars"),
+        factor_year_overrides={},
+        country_factor_year_overrides={},
         labels={"en": "Denmark ↔ Sweden", "da": "Danmark ↔ Sverige", "sv": "Danmark ↔ Sverige", "no": "Danmark ↔ Sverige"},
         method_note_key="dk_se_v1",
         active=True,
@@ -33,6 +43,8 @@ PAIR_SPECS = {
         countries=("denmark", "norway"),
         reference_year=2024,
         factor_keys=("population", "income", "density"),
+        factor_year_overrides={},
+        country_factor_year_overrides={},
         labels={"en": "Denmark ↔ Norway", "da": "Danmark ↔ Norge", "sv": "Danmark ↔ Norge", "no": "Danmark ↔ Norge"},
         method_note_key="dk_no_2024_beta",
         active=True,
@@ -42,10 +54,11 @@ PAIR_SPECS = {
         countries=("sweden", "norway"),
         reference_year=2024,
         factor_keys=("population", "age65", "education", "income", "density"),
+        factor_year_overrides={},
+        country_factor_year_overrides={"sweden": {"income": 2023}},
         labels={"en": "Sweden ↔ Norway", "da": "Sverige ↔ Norge", "sv": "Sverige ↔ Norge", "no": "Sverige ↔ Norge"},
-        method_note_key="se_no_2024_blocked",
-        active=False,
-        blocked_reason_key="annual_alignment_missing",
+        method_note_key="se_no_2024_beta",
+        active=True,
     ),
 }
 

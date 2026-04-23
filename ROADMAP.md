@@ -24,16 +24,10 @@ Live now:
   - year: `2024`
   - 3 shared factors: `population`, `income`, `population density`
   - explicit beta pair built on the narrow Denmark-Norway overlap that is actually real today
-
-Staged but blocked:
-
 - `se_no`
-
-Why blocked:
-
-- Norway data now exists locally in `nabour/data/norway/factors/`
-- `dk_no` became viable only after rebuilding Danish `2024` population and density from official municipality rows
-- `se_no` is still blocked because Sweden does not yet expose the matching `2024` municipal rows needed for an honest pair
+  - structural year: `2024`
+  - factors: `population`, `age65`, `education`, `income`, `population density`
+  - live beta with explicit mixed-year note: Sweden `income` uses `2023` latest municipal row while remaining factors stay `2024`
 
 ## Next useful pass
 
@@ -42,12 +36,11 @@ v0.2 should:
 - lock the pair architecture in code
 - keep `dk_se` stable as the broad baseline pair
 - carry `dk_no` as a narrower live beta pair instead of leaving Norway fully outside
-- carry `se_no` as an explicit blocked spec instead of a vague future idea
+- carry `se_no` as a live beta with explicit year-mismatch disclosure
 - make pair-specific method notes visible in the app
-- keep `se_no` out of the public matcher until the missing Sweden rows are solved
+
 ## Non-goals
 
-- fake `se_no` results built on non-aligned years
 - one giant Nordic normalization regime
 - maps
 - user weighting

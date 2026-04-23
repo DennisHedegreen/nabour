@@ -44,9 +44,13 @@ class MatcherState:
     standardized_vectors: dict[str, list[StandardizedMunicipalityVector]]
 
 
-def get_matching_value(vector: MunicipalityVector, factor_key: str, reference_year: int) -> float:
+def get_matching_value(vector: MunicipalityVector, factor_key: str, pair_spec: PairSpec) -> float:
     if factor_key == "income":
-        return income_to_match_currency_dkk(vector.country_id, vector.values[factor_key], reference_year=reference_year)
+        return income_to_match_currency_dkk(
+            vector.country_id,
+            vector.values[factor_key],
+            reference_year=pair_spec.factor_year(vector.country_id, factor_key),
+        )
     return vector.values[factor_key]
 
 
@@ -58,7 +62,7 @@ def build_standardized_vectors(
     for country_vectors in vectors_by_country.values():
         for vector in country_vectors:
             for factor_key in pair_spec.factor_keys:
-                factor_values[factor_key].append(get_matching_value(vector, factor_key, pair_spec.reference_year))
+                factor_values[factor_key].append(get_matching_value(vector, factor_key, pair_spec))
 
     stats: dict[str, tuple[float, float]] = {}
     for factor_key, values in factor_values.items():
@@ -77,7 +81,7 @@ def build_standardized_vectors(
             values = {}
             for factor_key in pair_spec.factor_keys:
                 mean, std = stats[factor_key]
-                values[factor_key] = (get_matching_value(vector, factor_key, pair_spec.reference_year) - mean) / std
+                values[factor_key] = (get_matching_value(vector, factor_key, pair_spec) - mean) / std
             standardized[country_id].append(
                 StandardizedMunicipalityVector(
                     country_id=country_id,

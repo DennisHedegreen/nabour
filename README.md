@@ -18,9 +18,11 @@ This repo is a small public-style tool room. It is being reshaped from one hardc
     - reference year: `2024`
     - factors: `population`, `income`, `population density`
     - status: live beta pair built on the narrow Denmark-Norway overlap that is actually real today
-- Planned but blocked pairs:
   - `se_no`
-  - Norway data is staged locally, and `se_no` stays blocked because Sweden does not currently provide the 2024 municipal rows needed for an honest aligned release.
+    - countries: `Sweden` and `Norway`
+    - reference year: `2024` structural layer
+    - factors: `population`, `age65`, `education`, `income`, `population density`
+    - status: live beta pair where Sweden income is currently the latest municipal row (`2023`) while the remaining factors are `2024`
 
 ## What it does
 
@@ -70,10 +72,7 @@ Current active matcher rule:
 
 - `dk_se` uses `2022` as the last clean common full reference year.
 - `dk_no` uses a narrower `2024` beta layer built from the real Denmark-Norway overlap: `population`, `income`, `population density`.
-
-Current blocked pair rule:
-
-- `se_no` is still planned around a wider `2024` structural layer, but stays disabled until Sweden exposes the missing annual rows needed to make that pair spec real.
+- `se_no` uses a `2024` structural layer with five factors, but keeps Sweden income on `2023` until a matching municipal `2024` income row is available.
 
 ## Run locally
 

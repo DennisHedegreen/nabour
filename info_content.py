@@ -44,10 +44,10 @@ PAIR_METHOD_LINES = {
             "Denmark population and density are rebuilt for 2024 from official municipal population rows so the pair can share one real year.",
             "Age 65+, education, turnout, and cars stay out because the current Denmark-Norway overlap is not honest enough there yet.",
         ],
-        "se_no_2024_blocked": [
-            "The Sweden-Norway pair is still blocked.",
-            "Norway has a clean 2024 structural layer, but Sweden does not currently expose the matching 2024 municipal rows needed for an honest release.",
-            "The pair architecture is ready before the pair data is ready.",
+        "se_no_2024_beta": [
+            "The Sweden-Norway pair runs on a 2024 structural layer with population, age 65+, education, income, and population density.",
+            "Income is temporarily the latest Sweden municipal row (2023) while the rest of the pair stays on 2024.",
+            "This is a live beta pair and the income-year mismatch is explicit.",
         ],
     },
     "da": {
@@ -62,10 +62,10 @@ PAIR_METHOD_LINES = {
             "Danmarks befolkning og tæthed er genopbygget til 2024 fra officielle kommunale befolkningstal, så parret faktisk kan dele ét rigtigt år.",
             "65+, uddannelse, valgdeltagelse og biler er stadig ude, fordi overlapet mellem Danmark og Norge ikke er ærligt nok der endnu.",
         ],
-        "se_no_2024_blocked": [
-            "Sverige-Norge-paret er stadig blokeret.",
-            "Norge har et rent 2024-lag, men Sverige eksponerer endnu ikke de tilsvarende kommunerækker for 2024 som en ærlig release kræver.",
-            "Pair-arkitekturen er klar før pair-dataene er det.",
+        "se_no_2024_beta": [
+            "Sverige-Norge-paret kører på et 2024 strukturlag med befolkning, 65+, uddannelse, indkomst og befolkningstæthed.",
+            "Indkomst er midlertidigt seneste svenske kommunerække (2023), mens resten af parret ligger på 2024.",
+            "Dette er et live beta-par, og indkomst-års-forskellen er gjort tydelig.",
         ],
     },
     "sv": {
@@ -80,10 +80,10 @@ PAIR_METHOD_LINES = {
             "Danmarks befolkning och täthet är återbyggda till 2024 från officiella kommunrader så att paret faktiskt kan dela ett riktigt år.",
             "65+, utbildning, valdeltagande och bilar är fortfarande ute eftersom överlappet mellan Danmark och Norge ännu inte är ärligt nog där.",
         ],
-        "se_no_2024_blocked": [
-            "Sverige-Norge-paret är fortfarande blockerat.",
-            "Norge har ett rent 2024-lager, men Sverige exponerar ännu inte de motsvarande kommunraderna för 2024 som en ärlig release kräver.",
-            "Pair-arkitekturen är redo före pair-datan.",
+        "se_no_2024_beta": [
+            "Sverige-Norge-paret kör på ett 2024-strukturlager med befolkning, 65+, utbildning, inkomst och befolkningstäthet.",
+            "Inkomst är tillfälligt senaste svenska kommunrad (2023), medan resten av paret ligger på 2024.",
+            "Detta är ett live betapar och inkomst-årsskillnaden är explicit.",
         ],
     },
     "no": {
@@ -98,10 +98,10 @@ PAIR_METHOD_LINES = {
             "Danmarks befolkning og tetthet er bygget opp igjen for 2024 fra offisielle kommunerader, slik at paret faktisk kan dele ett reelt år.",
             "65+, utdanning, valgdeltakelse og biler er fortsatt ute fordi overlapet mellom Danmark og Norge ennå ikke er ærlig nok der.",
         ],
-        "se_no_2024_blocked": [
-            "Sverige-Norge-paret er fortsatt blokkert.",
-            "Norge har et rent 2024-lag, men Sverige eksponerer ennå ikke de tilsvarende kommuneradene for 2024 som en ærlig release krever.",
-            "Pair-arkitekturen er klar før pair-dataene er det.",
+        "se_no_2024_beta": [
+            "Sverige-Norge-paret kjører på et 2024-strukturlag med befolkning, 65+, utdanning, inntekt og befolkningstetthet.",
+            "Inntekt er midlertidig siste svenske kommunerad (2023), mens resten av paret holder 2024.",
+            "Dette er et live betapar, og årsforskjellen på inntekt er eksplisitt.",
         ],
     },
 }

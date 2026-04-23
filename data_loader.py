@@ -83,7 +83,7 @@ def load_factor_values(
 
 def load_country_vectors(
     country_id: str,
-    factor_keys: tuple[str, ...],
+    factor_years: dict[str, int],
     reference_year: int,
     data_root: Path | None = None,
 ) -> list[MunicipalityVector]:
@@ -91,10 +91,10 @@ def load_country_vectors(
         factor_key: load_factor_values(
             country_id=country_id,
             factor_key=factor_key,
-            reference_year=reference_year,
+            reference_year=factor_year,
             data_root=data_root,
         )
-        for factor_key in factor_keys
+        for factor_key, factor_year in factor_years.items()
     }
     municipality_sets = [set(values.keys()) for values in factor_maps.values()]
     if not municipality_sets:
@@ -103,7 +103,7 @@ def load_country_vectors(
     shared_municipalities = set.intersection(*municipality_sets)
     vectors: list[MunicipalityVector] = []
     for municipality in sorted(shared_municipalities):
-        values = {factor_key: factor_maps[factor_key][municipality] for factor_key in factor_keys}
+        values = {factor_key: factor_maps[factor_key][municipality] for factor_key in factor_years}
         vectors.append(
             MunicipalityVector(
                 country_id=country_id,
@@ -122,7 +122,7 @@ def load_vectors_by_country_for_pair(
     return {
         country_id: load_country_vectors(
             country_id=country_id,
-            factor_keys=pair_spec.factor_keys,
+            factor_years={factor_key: pair_spec.factor_year(country_id, factor_key) for factor_key in pair_spec.factor_keys},
             reference_year=pair_spec.reference_year,
             data_root=data_root,
         )
@@ -139,7 +139,7 @@ def summarize_country_coverage(
         factor_key: load_factor_values(
             country_id=country_id,
             factor_key=factor_key,
-            reference_year=pair_spec.reference_year,
+            reference_year=pair_spec.factor_year(country_id, factor_key),
             data_root=data_root,
         )
         for factor_key in pair_spec.factor_keys
